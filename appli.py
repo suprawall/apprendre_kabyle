@@ -6,6 +6,12 @@ import matplotlib as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from biblio import get_dict_champ_vide
+from PIL import Image, ImageTk
+
+import io
+import os
+import re
+import PyPDF2
 
 # ======================
 # BASE 1 : Mots
@@ -86,6 +92,22 @@ CREATE TABLE IF NOT EXISTS dico (
 """)
 base_dico_db.commit()
 
+# ======================
+# BASE 4 : SUJET BAC
+# ======================
+bac_conn = sqlite3.connect("bac.db")
+bac_cur = bac_conn.cursor()
+bac_cur.execute("""
+CREATE TABLE IF NOT EXISTS bac (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reponse TEXT,
+    question BLOB,
+    annee INTEGER NOT NULL,
+    categorie TEXT NOT NULL
+)
+""")
+bac_conn.commit()
+
 class KabyleApp:
     def __init__(self, root):
         self.root = root
@@ -111,6 +133,9 @@ class KabyleApp:
         self.verbe_button.pack(pady=10)
         
         self.view_button = tk.Button(self.main_frame, text="Dictionnaire", command=self.visualiser_dico, width=30)
+        self.view_button.pack(pady=10)
+        
+        self.view_button = tk.Button(self.main_frame, text="BAC", command=self.visualiser_bac, width=30)
         self.view_button.pack(pady=10)
         
         self.reload_quizz = False
@@ -1232,6 +1257,79 @@ class KabyleApp:
                 font=("Arial", 9), 
                 command=lambda l=lettre: self.visualiser_dico_from_lettre(l, listbox)
             ).pack(pady=2)
+
+    def visualiser_bac(self):
+        bac_win = tk.Toplevel(self.root)
+        bac_win.title("Visualisation des sujets de BAC")
+        bac_win.geometry("600x800")
+        
+        padding_x = 20
+        
+        col_normaux = 0
+        rn = 0
+        col_question = 5
+        rq = 0
+        col_rattrapage = 10
+        rr = 0
+        for sujet in os.listdir("BAC"):
+            sujet_name = sujet.replace(".pdf", "")
+            if "kab" in sujet_name:
+                if rn == 0:
+                    ln = tk.Label(bac_win, text="Traduction d'un texte", width=20, font=("Arial", 9))
+                    ln.grid(row=rn, column=col_normaux, padx=padding_x, pady=5, sticky="w")
+                    rn += 1
+                btn = tk.Button(bac_win, text=sujet_name, width=20, font=("Arial", 9), command=lambda s=sujet_name, cat="normal": self.ouvrir_sujet_bac(s, cat))
+                btn.grid(row=rn, column=col_normaux, padx=padding_x, pady=5, sticky="w")
+                rn += 1
+            elif "question" in sujet_name:
+                if rq == 0:
+                    lq = tk.Label(bac_win, text="répondre à des questions", width=20, font=("Arial", 9))
+                    lq.grid(row=rq, column=col_question, padx=padding_x, pady=5, sticky="w")
+                    rq += 1
+                btn = tk.Button(bac_win, text=sujet_name, width=20, font=("Arial", 9), command=lambda s=sujet_name, cat="questions": self.ouvrir_sujet_bac(s, cat))
+                btn.grid(row=rq, column=col_question, padx=padding_x, pady=5, sticky="w")
+                rq += 1
+            elif "rattrapage" in sujet_name:
+                if rr == 0:
+                    lr = tk.Label(bac_win, text="Traduction d'un texte (rattrapage)", width=30, font=("Arial", 9))
+                    lr.grid(row=rr, column=col_rattrapage, padx=padding_x, pady=5, sticky="w")
+                    rr += 1
+                btn = tk.Button(bac_win, text=sujet_name, width=20, font=("Arial", 9), command=lambda s=sujet_name, cat="rattrapage": self.ouvrir_sujet_bac(s, cat))
+                btn.grid(row=rr, column=col_rattrapage, padx=padding_x, pady=5, sticky="w")
+                rr += 1
+            
+    def ouvrir_sujet_bac(self, sujet, cat):
+        match = re.search(r"\d{4}", sujet)  # récupère une année (4 chiffres)
+        if match:
+            annee = int(match.group())
+            print("annee:", annee)
+            bac_cur.execute(
+                "SELECT reponse, question FROM bac WHERE annee = ? AND categorie = ?", 
+                (annee, cat)
+            )
+        correspondance = bac_cur.fetchone()
+        if correspondance is None:
+            return
+        
+        bonne_reponse, img_bytes = correspondance
+        sujet_win = tk.Toplevel(self.root)
+        sujet_win.title(f"Sujet {annee} ({cat})")
+        sujet_win.geometry("800x600")
+        
+        image = Image.open(io.BytesIO(img_bytes))
+        image = image.resize((600, 400), Image.LANCZOS)
+        photo = ImageTk.PhotoImage(image)
+        
+        lbl_img = tk.Label(sujet_win, image=photo)
+        lbl_img.image = photo  # garder une référence pour éviter que l’image disparaisse
+        lbl_img.pack(pady=10)
+        
+        lbl_txt = tk.Label(sujet_win, text="Votre réponse :", font=("Arial", 12))
+        lbl_txt.pack()
+
+        txt_answer = tk.Text(sujet_win, height=5, width=80)
+        txt_answer.pack(pady=5)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
