@@ -5,7 +5,7 @@ import random
 import matplotlib as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from biblio import get_dict_champ_vide
+from biblio import get_dict_champ_vide, score_semantique
 from PIL import Image, ImageTk
 
 import io
@@ -1302,7 +1302,6 @@ class KabyleApp:
         match = re.search(r"\d{4}", sujet)  # récupère une année (4 chiffres)
         if match:
             annee = int(match.group())
-            print("annee:", annee)
             bac_cur.execute(
                 "SELECT reponse, question FROM bac WHERE annee = ? AND categorie = ?", 
                 (annee, cat)
@@ -1314,7 +1313,7 @@ class KabyleApp:
         bonne_reponse, img_bytes = correspondance
         sujet_win = tk.Toplevel(self.root)
         sujet_win.title(f"Sujet {annee} ({cat})")
-        sujet_win.geometry("800x600")
+        sujet_win.geometry("800x800")
         
         image = Image.open(io.BytesIO(img_bytes))
         image = image.resize((600, 400), Image.LANCZOS)
@@ -1327,8 +1326,35 @@ class KabyleApp:
         lbl_txt = tk.Label(sujet_win, text="Votre réponse :", font=("Arial", 12))
         lbl_txt.pack()
 
-        txt_answer = tk.Text(sujet_win, height=5, width=80)
-        txt_answer.pack(pady=5)
+        frame_txt = tk.Frame(sujet_win)
+        frame_txt.pack(pady=5)
+
+        scrollbar = tk.Scrollbar(frame_txt)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        txt_answer = tk.Text(frame_txt, height=15, width=80, yscrollcommand=scrollbar.set, wrap="word")
+        txt_answer.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar.config(command=txt_answer.yview)
+        
+        def soumettre():
+            nonlocal nb_essaie
+            nb_essaie += 1
+            rep_joueur = txt_answer.get("1.0", tk.END).strip()
+            if not rep_joueur:
+                messagebox.showwarning("Attention", "Veuillez entrer une réponse.")
+                return
+            
+            lbl_load = tk.Label(sujet_win, text="Calcul du score...", width=100, font=("Arial", 9))
+            lbl_load.pack()
+            sujet_win.update_idletasks()
+            
+            score = score_semantique(rep_joueur, bonne_reponse)
+            lbl_load.config(text=f"Essaie numéro {nb_essaie}, score de: {score} / 20")
+        
+        nb_essaie = 0
+        btn = tk.Button(sujet_win, text="Soumettre", width=20, font=("Arial", 9), command=soumettre).pack()
+    
 
 
 if __name__ == "__main__":

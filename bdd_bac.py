@@ -124,15 +124,15 @@ famille sont fatigués de veiller, ils se couchent. Pour elle, ce n'est pas enco
 Elle se couchera bonne dernière. Elle achève son ménage ou bien, s'il y a de la lessive, elle la
 préparera pour le lendemain..."""
 
-fr_2000 = """On raconte qu’un roi des temps anciens en Kabylie, nommé Boukhtouch, avait un éléphant
-qu'on appelait l'Eléphant de Boukhtouch. Sa nourriture était à la charge des habitants du pays : à tour
+fr_2000 = """On raconte qu’un roi des temps anciens en Kabylie, nommé Buxtuc, avait un éléphant
+qu'on appelait l'Eléphant de Buxtuc. Sa nourriture était à la charge des habitants du pays : à tour
 de rôle, les familles devaient lui donner chaque jour un sac de fèves et deux de blé. De plus, il pâturait
 dans les potagers et les abîmait complètement car, non seulement il mangeait jusqu'à satiété, mais il
 s'allongeait pour dormir au milieu des courges et des petits pois. Les gens voulaient se plaindre, mais
 ils avaient peur car le roi était sévère et coupait facilement les têtes !
 Pourtant, quand ils estimèrent que les limites étaient dépassées, les anciens du village se réunirent et se
 dirent :
-– « Essayons de trouver un moyen pour nous débarrasser de cet éléphant de Boukhtouch : il
+– « Essayons de trouver un moyen pour nous débarrasser de cet éléphant de Buxtuc : il
 nous mange tous nos biens, nous détruit nos jardins ; essayons de trouver une solution (pour nous en
 débarrasser). Si nous sommes tous d'accord pour dire la même chose, le roi ne pourra nous faire aucun
 mal, tandis que si l'un de nous est seul à se plaindre, il pourrait le faire battre et même lui couper la
@@ -141,7 +141,7 @@ tête. »
 Ils décidèrent donc que l'un d'entre dirait : « Seigneur Roi, ton éléphant... ». Un deuxième ajouterait :
 « nous cause bien du tort ! » et un troisième terminerait : « il serait souhaitable que tu nous en
 débarrasses... ? »
-Le lendemain, les anciens allèrent trouver le roi Boukhtouch qui leur dit :
+Le lendemain, les anciens allèrent trouver le roi Buxtuc qui leur dit :
 – « Que voulez-vous de moi ? »
 – « Seigneur Roi…, dit le premier, ton éléphant... » et il se tut.
 Mais le second vieillard ne poursuivit pas la phrase. Et tous les autres restaient muets. Celui qui avait

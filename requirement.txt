@@ -1,0 +1,1 @@
+pip install tkinter, sqlite3, matplotlib, sentence_transformers, PIL
