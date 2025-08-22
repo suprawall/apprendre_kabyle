@@ -5,7 +5,7 @@ import random
 import matplotlib as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from biblio import get_dict_champ_vide, score_semantique
+from modules.biblio import get_dict_champ_vide, score_semantique
 from PIL import Image, ImageTk
 
 import io
@@ -16,7 +16,7 @@ import PyPDF2
 # ======================
 # BASE 1 : Mots
 # ======================
-conn = sqlite3.connect("kabyle_learn.db")
+conn = sqlite3.connect("data/kabyle_learn.db")
 cursor = conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS categories (
@@ -37,7 +37,7 @@ conn.commit()
 # ======================
 # BASE 2 : Verbes
 # ======================
-verb_conn = sqlite3.connect("verbes.db")
+verb_conn = sqlite3.connect("data/verbes.db")
 verb_cursor = verb_conn.cursor()
 
 # Création de la table verbes
@@ -63,7 +63,7 @@ verb_conn.commit()
 # ======================
 # BASE 3 : Notes
 # ======================
-note_conn = sqlite3.connect("notes.db")
+note_conn = sqlite3.connect("data/notes.db")
 note_cursor = note_conn.cursor()
 
 note_cursor.execute("""
@@ -80,7 +80,7 @@ note_conn.commit()
 # ======================
 # BASE 4 : DICTIONNAIRE APPRENDRE_KABYLE.COM
 # ======================
-base_dico_db = sqlite3.connect("dico.db")
+base_dico_db = sqlite3.connect("data/dico.db")
 base_dico_cursor = base_dico_db.cursor()
 
 base_dico_cursor.execute("""
@@ -95,7 +95,7 @@ base_dico_db.commit()
 # ======================
 # BASE 4 : SUJET BAC
 # ======================
-bac_conn = sqlite3.connect("bac.db")
+bac_conn = sqlite3.connect("data/bac.db")
 bac_cur = bac_conn.cursor()
 bac_cur.execute("""
 CREATE TABLE IF NOT EXISTS bac (
@@ -1357,7 +1357,4 @@ class KabyleApp:
     
 
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = KabyleApp(root)
-    root.mainloop()
+
