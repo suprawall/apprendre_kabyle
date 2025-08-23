@@ -10,13 +10,21 @@ from PIL import Image, ImageTk
 
 import io
 import os
+import sys
 import re
 import PyPDF2
 
+def resource_path(relative_path):
+    """
+    Retourne le chemin absolu vers les fichiers, en .py ou .exe.
+    """
+    base_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+    return os.path.join(base_path, relative_path)
+    
 # ======================
 # BASE 1 : Mots
 # ======================
-conn = sqlite3.connect("data/kabyle_learn.db")
+conn = sqlite3.connect(resource_path("data/kabyle_learn.db"))
 cursor = conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS categories (
@@ -37,7 +45,7 @@ conn.commit()
 # ======================
 # BASE 2 : Verbes
 # ======================
-verb_conn = sqlite3.connect("data/verbes.db")
+verb_conn = sqlite3.connect(resource_path("data/verbes.db"))
 verb_cursor = verb_conn.cursor()
 
 # Création de la table verbes
@@ -63,7 +71,7 @@ verb_conn.commit()
 # ======================
 # BASE 3 : Notes
 # ======================
-note_conn = sqlite3.connect("data/notes.db")
+note_conn = sqlite3.connect(resource_path("data/notes.db"))
 note_cursor = note_conn.cursor()
 
 note_cursor.execute("""
@@ -80,7 +88,7 @@ note_conn.commit()
 # ======================
 # BASE 4 : DICTIONNAIRE APPRENDRE_KABYLE.COM
 # ======================
-base_dico_db = sqlite3.connect("data/dico.db")
+base_dico_db = sqlite3.connect(resource_path("data/dico.db"))
 base_dico_cursor = base_dico_db.cursor()
 
 base_dico_cursor.execute("""
@@ -95,7 +103,7 @@ base_dico_db.commit()
 # ======================
 # BASE 4 : SUJET BAC
 # ======================
-bac_conn = sqlite3.connect("data/bac.db")
+bac_conn = sqlite3.connect(resource_path("data/bac.db"))
 bac_cur = bac_conn.cursor()
 bac_cur.execute("""
 CREATE TABLE IF NOT EXISTS bac (
@@ -1271,43 +1279,45 @@ class KabyleApp:
         rq = 0
         col_rattrapage = 10
         rr = 0
-        for sujet in os.listdir("BAC"):
-            sujet_name = sujet.replace(".pdf", "")
-            if "kab" in sujet_name:
+        
+        bac_cur.execute("SELECT annee, categorie FROM bac")
+        data_bac = bac_cur.fetchall()
+        print(len(data_bac))
+        
+        for annee, cat in data_bac:
+            if cat == "normal":
                 if rn == 0:
                     ln = tk.Label(bac_win, text="Traduction d'un texte", width=20, font=("Arial", 9))
                     ln.grid(row=rn, column=col_normaux, padx=padding_x, pady=5, sticky="w")
                     rn += 1
-                btn = tk.Button(bac_win, text=sujet_name, width=20, font=("Arial", 9), command=lambda s=sujet_name, cat="normal": self.ouvrir_sujet_bac(s, cat))
+                btn = tk.Button(bac_win, text=f"sujet_{annee}", width=20, font=("Arial", 9), command=lambda a=annee, c=cat: self.ouvrir_sujet_bac(a, c))
                 btn.grid(row=rn, column=col_normaux, padx=padding_x, pady=5, sticky="w")
                 rn += 1
-            elif "question" in sujet_name:
+            elif cat == "questions":
                 if rq == 0:
                     lq = tk.Label(bac_win, text="répondre à des questions", width=20, font=("Arial", 9))
                     lq.grid(row=rq, column=col_question, padx=padding_x, pady=5, sticky="w")
                     rq += 1
-                btn = tk.Button(bac_win, text=sujet_name, width=20, font=("Arial", 9), command=lambda s=sujet_name, cat="questions": self.ouvrir_sujet_bac(s, cat))
+                btn = tk.Button(bac_win, text=f"questions_{annee}", width=20, font=("Arial", 9), command=lambda a=annee, c=cat: self.ouvrir_sujet_bac(a, c))
                 btn.grid(row=rq, column=col_question, padx=padding_x, pady=5, sticky="w")
                 rq += 1
-            elif "rattrapage" in sujet_name:
+            elif cat == "rattrapage":
                 if rr == 0:
                     lr = tk.Label(bac_win, text="Traduction d'un texte (rattrapage)", width=30, font=("Arial", 9))
                     lr.grid(row=rr, column=col_rattrapage, padx=padding_x, pady=5, sticky="w")
                     rr += 1
-                btn = tk.Button(bac_win, text=sujet_name, width=20, font=("Arial", 9), command=lambda s=sujet_name, cat="rattrapage": self.ouvrir_sujet_bac(s, cat))
+                btn = tk.Button(bac_win, text=f"rattrapage_{annee}", width=20, font=("Arial", 9), command=lambda a=annee, c=cat: self.ouvrir_sujet_bac(a, c))
                 btn.grid(row=rr, column=col_rattrapage, padx=padding_x, pady=5, sticky="w")
                 rr += 1
             
-    def ouvrir_sujet_bac(self, sujet, cat):
-        match = re.search(r"\d{4}", sujet)  # récupère une année (4 chiffres)
-        if match:
-            annee = int(match.group())
-            bac_cur.execute(
-                "SELECT reponse, question FROM bac WHERE annee = ? AND categorie = ?", 
-                (annee, cat)
-            )
+    def ouvrir_sujet_bac(self, annee, cat):
+        bac_cur.execute(
+            "SELECT reponse, question FROM bac WHERE annee = ? AND categorie = ?", 
+            (annee, cat)
+        )
         correspondance = bac_cur.fetchone()
         if correspondance is None:
+            print("pas de correspondance ici")
             return
         
         bonne_reponse, img_bytes = correspondance
